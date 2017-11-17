@@ -1,5 +1,6 @@
 from flickrsyncr.general import CHECKSUM_TAG_PREFIX
 from flickrsyncr.general import SyncError
+from flickrsyncr.general import VERSION
 from flickrsyncr.settings import DEFAULT_CONFIG_FILE
 from flickrsyncr.settings import Settings
 from flickrsyncr.sync import sync
@@ -39,7 +40,7 @@ __all__ = [
     'sync',
 ]
 __author__ = 'Brad Conte'
-__version__ = flickrsyncr.general.VERSION
+__version__ = VERSION
 
 
 if __name__ == '__main__':
