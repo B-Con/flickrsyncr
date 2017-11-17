@@ -131,17 +131,17 @@ Syncing
 
 * If ``checksum`` is specified, a list of photos with mismatched checksums is compiled. Flickr photos without checksums will always mismatch.
 
-* For ``push``:
+*    For ``push``:
 
-    * unique local photos are uploaded.
-    * if ``checksum`` is specified, mismatched photos are removed from Flickr and then uploaded.
-    * if ``sync`` is specified, all unique Flickr photos are deleted.
+     * unique local photos are uploaded.
+     * if ``checksum`` is specified, mismatched photos are removed from Flickr and then uploaded.
+     * if ``sync`` is specified, all unique Flickr photos are deleted.
 
-* For ``pull``:
+*    For ``pull``:
 
-    * unique remote photos are downloaded.
-    * if ``checksum`` is specified, mismatched photos are removed from local path and then downloaded.
-    * if ``sync`` is specified, all unique local photos are deleted.
+     * unique remote photos are downloaded.
+     * if ``checksum`` is specified, mismatched photos are removed from local path and then downloaded.
+     * if ``sync`` is specified, all unique local photos are deleted.
 
 Uploads
 -------
