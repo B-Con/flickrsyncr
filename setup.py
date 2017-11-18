@@ -20,7 +20,4 @@ setup(
     license = license,
     scripts = ['bin/flickrsyncr'],
     keywords='flickr sync upload download backup photo album',
-    package_data = {
-        'flickrsyncr': ['etc/flicksyncr.config']
-    }
 )
