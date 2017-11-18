@@ -216,9 +216,9 @@ def photosetDifferencesUnitTest6():
 def pauseVerify(test_num, settings, happened, state):
     print('=======================================')
     print('* Finished test step #{} (program output, if it exists, is above ^)'.format(test_num))
-    print('* Here is what should have just happened:\n===> ' + happened)
-    print('* Settings used:\n===> ' + str(settings))
-    print('* HUMAN: Please verify the following state:\n===> ' + state)
+    print('* Settings used:\n===> ' + str(settings) + '\n')
+    print('* Here is what should have just happened:\n===> ' + happened + '\n')
+    print('* HUMAN: Please verify the following state:\n===> ' + state + '\n')
     print('Press <Enter> to move onto the next test...')
     input()
 
