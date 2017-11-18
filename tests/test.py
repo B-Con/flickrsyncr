@@ -324,10 +324,11 @@ def customOneOff():
 
 
 def main():
-    #checksumTagUnitTests()
-    #photosetDifferencesUnitTests()
-    #interactiveEndToEnd()
-    customOneOff()
+    checksumTagUnitTests()
+    photosetDifferencesUnitTests()
+    interactiveEndToEnd()
+    #customOneOff()
 
 if __name__ == '__main__':
     main()
+
