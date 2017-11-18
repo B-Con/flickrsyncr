@@ -63,7 +63,7 @@ class LocalPhoto(Photo):
 
     def transfer(self, flickr, settings):
         filename = os.path.join(self.path, self.title)
-        msg = 'Uploading to Flickr: ' + filename
+        msg = 'Uploading to album: ' + filename
         logger.info(msg)
         print(msg)
         if not settings.dryrun:
