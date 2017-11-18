@@ -91,8 +91,8 @@ class Settings():
         """
         # The Flickr API key and secret must be specified.
         if not self.api_key or not self.api_secret:
-            raise SyncError('The api_key and api_secret must be provided.' +
-                    'What was set: api_key={}}, api_secret=%{}}'.format(
+            raise SyncError('The api_key and api_secret must be provided. ' +
+                    'What was set: api_key={}, api_secret=%{}'.format(
                     self.api_key, self.api_secret))
 
         # User must specify at least --push or --pull.
