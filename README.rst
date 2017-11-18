@@ -115,8 +115,8 @@ See the cmd-line prompt ``--help`` for the most detail on the settings/arguments
 Local state
 -----------
 
-* User-created ``config.conf``.
-* OAuth credentials, stored and managed by the flickrapi library.
+* User-created ``config.conf``, defaulting to ``~/.config/flickrsyncr/``.
+* OAuth credentials in ``~/.flickr/``, managed by the flickrapi library.
 
 Syncing
 -------
