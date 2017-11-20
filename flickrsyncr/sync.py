@@ -38,6 +38,16 @@ class LocalPhoto(Photo):
         if not settings.dryrun:
             os.remove(f)
 
+    def _compileTags(self, settings):
+        # Assemble the tags to apply. The user custom tag plus the checksum tag. Convert to a
+        # space-delimited string afterward.
+        tags = []
+        if settings.tag:
+            tags.append(settings.tag)
+        if settings.checksum:
+            tags.append(createChecksumTag(self.getChecksum()))
+        return ' '.join(tags)
+
     # Calculate the checksum of a local file. Return it as a hex string.
     # Use MD5 as the checksum. (This isn't for security.)
     def getChecksum(self):
@@ -51,38 +61,37 @@ class LocalPhoto(Photo):
         logger.debug('Calculated checksum for photo "{}": {}'.format(self.title, checksum))
         return checksum
 
-    def compileTags(self, settings):
-        # Assemble the tags to apply. The user custom tag plus the checksum tag. Convert to a
-        # space-delimited string afterward.
-        tags = []
-        if settings.tag:
-            tags.append(settings.tag)
-        if settings.checksum:
-            tags.append(createChecksumTag(self.getChecksum()))
-        return ' '.join(tags)
-
     def transfer(self, flickr, settings):
         filename = os.path.join(self.path, self.title)
-        msg = 'Uploading to album: ' + filename
-        logger.info(msg)
-        print(msg)
+        logger.info('Uploading {} to album_id {}'.format(filename, settings.album_id))
+        print('Uploading ' + filename)
         if not settings.dryrun:
             # The upload API only supports XML responses.
             # TODO: Upload is serial. Add parallel uploads?
-            tags = self.compileTags(settings)
-            resp = flickr.upload(filename, title=self.title, format='etree', tags=tags,
-                    is_public=0, is_friend=0, is_family=0)
+            tags = self._compileTags(settings)
+            try:
+                resp = flickr.upload(filename, title=self.title, format='etree', tags=tags,
+                        is_public=0, is_friend=0, is_family=0)
+            except flickrapi.exceptions.FlickrError as e:
+                if e.code == 5:
+                    print('...unaccepted filetype by Flickr, skipping')
+                    logger.info('File {} is an unaccepted filetype by Flickr'.format(filename))
             photo_id = resp.find('photoid').text
             logger.info('Uploaded photo ID: ' + photo_id)
 
             # Adds the new photo to the destination album. Create the album if it doesn't exist
             # yet. We have to do it after an upload because albums can't be empty so we need a
             # photo to put in it.
-            if settings.album_id == None:
-                # Adds the photo_id to the album (as the cover photo).
-                createAlbum(flickr, settings, photo_id)
-            else:
+            try:
                 flickr.photosets.addPhoto(photoset_id=settings.album_id, photo_id=photo_id)
+            except flickrapi.exceptions.FlickrError as e:
+                # Code "1" means "album ID not found".
+                # If the album no longer exists, we're starting without one or we removed it by
+                # removing all the photos.
+                if e.code == 1:
+                    logger.debug("Album ID {} doesn't exist".format(settings.album_id))
+                    # Creates the album and adds photo_id to it as the cover photo.
+                    settings.album_id = createAlbum(flickr, settings, photo_id)
 
 
 class RemotePhoto(Photo):
@@ -105,7 +114,7 @@ class RemotePhoto(Photo):
         for tag in self.tags:
             checksum = parseChecksumTag(tag)
             if checksum:
-                logger.debug('Found checksum for photo "{}": {}'.format(self.title, checksum))
+                logger.debug('Checksum (from tags) for "{}": {}'.format(self.title, checksum))
                 return checksum
         return ''
 
@@ -139,23 +148,24 @@ class MismatchedPhoto():
         self.local_photo = local_photo
 
     def __repr__(self):
-        return str(self.local_photo) + '|' + str(self.remote_photo)
+        return '({},{})'.format(self.local_photo, self.remote_photo)
 
 
+# Obtains the API interface and gets OAuth token if necessary.
+# TODO: Currently only supports one user, no way to ask for a specific user's token from storage.
 def getFlickrApi(settings):
-    flickr = flickrapi.FlickrAPI(settings.api_key, settings.api_secret, format='parsed-json')
+    logger.info('Obtaining Flickr API, using credentials in: "{}"'.format(settings.config_dir))
+    flickr = flickrapi.FlickrAPI(settings.api_key, settings.api_secret,
+            token_cache_location=settings.config_dir, format='parsed-json')
+
+    if not flickr.token_valid(perms='delete'):
+        logger.info('No OAuth token for user')
+        print('No existing valid OAuth tokens in config path {}'.format(settings.config_dir))
+        flickr.authenticate_console(perms='delete')
+
     token = flickr.auth.oauth.checkToken()
-
     if token['stat'] != 'ok':
-        logger.debug('No OAuth token for user')
-        print("We need an OAuth token. A browser window is opening in which " +
-              "you can authorize the app to access your Flickr account...")
-        flickr.authenticate_via_browser(perms='delete')
-        print("...OAuth redirect done.")
-        token = flickr.auth.oauth.checkToken()
-
-        if token['stat'] != 'ok':
-            raise SyncError("Couldn't get an OAuth token")
+        raise SyncError("Couldn't get an OAuth token")
 
     user_id = token['oauth']['user']['nsid']
     return flickr, user_id
@@ -177,7 +187,7 @@ def getAlbumID(flickr, settings):
         for album in page['photosets']['photoset']:
             if album['title']['_content'] == settings.album:
                     return album['id']
-    logger.debug('No album with that name exists. It will be created later.')
+    logger.debug('No album with name {} exists. It will be created later.'.format(settings.album))
     return None
 
 
@@ -188,7 +198,7 @@ def createAlbum(flickr, settings, photo_id):
     print('Creating album: "%s"' % settings.album)
     if resp['stat'] != 'ok':
         raise SyncError('Could not create album "{}", err={}'.format(settings.album, resp['stat']))
-    settings.album_id = resp['photoset']['id']
+    return resp['photoset']['id']
 
 
 # Get the photos in an album. The returned list is the list of all photos in the album in pages of
@@ -202,6 +212,8 @@ def getRemotePhotos(flickr, settings):
 
     # Download all the album pages. Pages are indexed from 1. Update the
     # page count once we make an API request.
+    # TODO: use the "for p in flickr.walk_set(settings.album_id, per_page=500)"" API?
+    # See https://stuvel.eu/flickrapi-doc/7-util.html#walking-through-all-photos-in-a-set .
     page_num = 1
     page_count = 1
     while page_num <= page_count:
@@ -250,8 +262,8 @@ def createChecksumTag(checksum):
 
 def parseChecksumTag(tag):
     checksum = ''
-    if tag.startswith(CHECKSUM_TAG_PREFIX_NORMALIZED ):
-        checksum = tag[len(CHECKSUM_TAG_PREFIX_NORMALIZED ):]
+    if tag.startswith(CHECKSUM_TAG_PREFIX):
+        checksum = tag[len(CHECKSUM_TAG_PREFIX):]
     return checksum
 
 

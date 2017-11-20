@@ -17,7 +17,7 @@ Setup
 
 2.     Save the API key and secret in a config file (unless you will provide it on the cmd-line or in the ``Settings()`` object).
 
-       *     The config file at ``~/.config/flickrsyncr/config.conf`` will used by default unless an alternative path is specified via ``--config_path``. Sample config file content::
+       *     The config file at ``~/.config/flickrsyncr/config.conf`` will used by default unless an alternative path is specified via ``--config_dir``. Sample config file content (there is also one in ``tests/config/config.conf``)::
 
                  [DEFAULT]
                  api_key = 0123456789abcdef0123456789abcdef
@@ -25,7 +25,11 @@ Setup
 
     * Multiple API key/secret pairs can be stored under different profile names. The ``DEFAULT`` profile will be used by default unless an alternative profile name is specified via ``--config_profile``.
 
-3. On the first run of the app, human involvement is necessary to authorize the app for Flickr OAuth. The app will automatically open a web browser with the Flickr app permissions prompt. The Flickr account the user is signed into during this process is the account that flickrsyncr will use.
+3.    On the first run, human involvement is necessary to authorize the app for Flickr OAuth access to the Flickr account. The app will provide a URL to visit in a web browser. Login to the Flickr account you want to associate the app with and then visit the displayed URL to grant the app permission.
+
+      ``delete`` permissions are necessary for syncing and removing content.
+
+      OAuth permissions are still checked and obtained in ``dryrun`` mode.
 
 Usage
 =====
@@ -115,8 +119,7 @@ See the cmd-line prompt ``--help`` for the most detail on the settings/arguments
 Local state
 -----------
 
-* User-created ``config.conf``, defaulting to ``~/.config/flickrsyncr/``.
-* OAuth credentials in ``~/.flickr/``, managed by the flickrapi library.
+* ``~/.config/flickrsyncr/``, containing a user-created ``config.conf`` (if applicable) and ``oauth-tokens.sqlite`` (managed by the flickrapi library).
 
 Syncing
 -------
@@ -134,13 +137,13 @@ Syncing
 *    For ``push``:
 
      * unique local photos are uploaded.
-     * if ``checksum`` is specified, mismatched photos are removed from Flickr and then uploaded.
+     * if ``checksum`` is specified, mismatched photos are deleted from Flickr and then uploaded.
      * if ``sync`` is specified, all unique Flickr photos are deleted.
 
 *    For ``pull``:
 
      * unique remote photos are downloaded.
-     * if ``checksum`` is specified, mismatched photos are removed from local path and then downloaded.
+     * if ``checksum`` is specified, mismatched photos are deleted from local path and then downloaded.
      * if ``sync`` is specified, all unique local photos are deleted.
 
 Uploads
@@ -157,9 +160,11 @@ Downloads
 * If ``tag`` is specified, the app won't notice any Flickr photos without the tag value.
 * The Flickr photo title is used as the local file name.
 
-Gotchas & Misc
-==============
+Edge-Cases & Gotchas
+====================
 
+* Flickr's API calls an "album" a "photoset". They're the same thing.
+* Flickr automatically deletes an album when it has no pictures. During a sync, if all the photos are deleted before more are uploaded then the album will be deleted by Flickr and re-created by this script. You will lose your album metadata tweaks, sorry.
 * To delete a Flickr album and it's contents, ``--push`` and empty directory with the album name.
 * Tag values are not added retroactively (and cannot be by the app). ex: ``--push`` followed by ``--push --tag=mytag`` will cause the entire album to be re-uploaded because the initial photos are invisible when ``--tag=mytag`` was specified.
 * Checksums are not added retroactively (and cannot be by the app). ex: ``--push`` followed by ``--push --checksum`` will cause the entire album to be deleted and re-uploaded because the initial push had no checksum and no checksum mismatches with the real checksum in the second step.

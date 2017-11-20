@@ -2,7 +2,7 @@ import logging
 
 
 # Application version. The canonical source.
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 # The tag naming is returned to users differently than it is set. When set, use "machine" mode.
 CHECKSUM_TAG_PREFIX = 'checksum:md5='

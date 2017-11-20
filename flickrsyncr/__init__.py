@@ -1,7 +1,6 @@
 from flickrsyncr.general import CHECKSUM_TAG_PREFIX
 from flickrsyncr.general import SyncError
 from flickrsyncr.general import VERSION
-from flickrsyncr.settings import DEFAULT_CONFIG_FILE
 from flickrsyncr.settings import Settings
 from flickrsyncr.sync import sync
 
@@ -35,7 +34,6 @@ flickrsyncr.sync(flickrsyncr.Settings('albumname', '/my/dir', pull=True, dryrun=
 __all__ = [
     'CHECKSUM_TAG_PREFIX',
     'SyncError',
-    'DEFAULT_CONFIG_FILE',
     'Settings',
     'sync',
 ]

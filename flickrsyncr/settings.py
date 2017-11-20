@@ -7,31 +7,46 @@ from flickrsyncr.general import logger
 from flickrsyncr.general import SyncError
 
 
-# The config file to use if none is specified.
-DEFAULT_CONFIG_FILE = '~/.config/flickrsyncr/config.conf'
+# The default config path.
+DEFAULT_CONFIG_DIR = '~/.config/flickrsyncr'
+# The default section name in the config.
+DEFAULT_SECTION_NAME = 'DEFAULT'
+# The config filename where settings are stored.
+CONFIG_FILENAME = 'config.conf'
 
 
 class Settings():
     """Settings for input to flickrsyncr.sync().
-    """
-    def __init__(self, album, path, api_key='', api_secret='', push=False, pull=False, sync=False,
-            tag='', checksum=False, dryrun=False, config_file='', config_profile=''):
-        """ album - Name of Flickr album
-        path - Local path for photos
-        api_key        - Flickr API key. (Required in Settings() or in the config file.)
-        api_secret     - Flickr API secret. (Required in Settings() or in the config file.)
-        push           - Local is the source, Flickr album is the destination. (aka, upload)
-        pull           - Flickr album is the source, local is the destination. (aka, download)
-        sync           - Remove all photos at the destination that aren't in the source.
-                         (Optional)
-        tag            - Ignore all Flickr photos without this tag. Uploaded photos will get the
-                         tag. (Optional)
-        checksum       - Store the file's checksum on Flickr, use it to detect edits. (Optional)
-        dryrun         - Don't make any modifications to photos, locally or on Flickr. (Optional)
-        config_file    - File path to use to load config settings. (Optional)
-        config_profile - Inside the config file, the profile name to use to load config settings.
-                        (Optional)
+
+    Supported parameters to __init__().
+
+    album
+        Name of Flickr album
+    path
+        Local path for photos
+    api_key
+        Flickr API key. (Required in Settings() or in the config file.)
+    api_secret
+        Flickr API secret. (Required in Settings() or in the config file.)
+    push
+        Local is the source, Flickr album is the destination. (aka, upload)
+    pull
+        Flickr album is the source, local is the destination. (aka, download)
+    sync
+        Remove all photos at the destination that aren't in the source. (Optional)
+    tag
+        Ignore all Flickr photos without this tag. Uploaded photos will get the tag. (Optional)
+    checksum
+        Store the file's checksum on Flickr, use it to detect edits. (Optional)
+    dryrun
+        Don't make any modifications to photos, locally or on Flickr. (Optional)
+    config_dir
+        Base path to use for loading/storing config settings. (Optional)
+    config_profile
+        Inside the config file, the profile name to use to load config settings. (Optional)
         """
+    def __init__(self, album, path, api_key='', api_secret='', push=False, pull=False, sync=False,
+            tag='', checksum=False, dryrun=False, config_dir='', config_profile=''):
         # User-provided settings.
         self.album = album
         self.path = path
@@ -43,57 +58,56 @@ class Settings():
         self.dryrun = dryrun
         self.api_key = api_key
         self.api_secret = api_secret
+        self.config_dir = os.path.expanduser(config_dir if config_dir else DEFAULT_CONFIG_DIR)
+        self.config_profile = config_profile if config_profile else DEFAULT_SECTION_NAME
 
         # Settings that are populated later.
         self.album_id = None
         self.user_id = None
 
-        # Automatically import default API settings if none are provided. Don't throw errors
-        # because this may not be setup by the caller.
-        if not api_key or not api_secret or config_file:
-            try:
-                self.importConfigFile(file_path=config_file, section_name=config_profile)
-            except Exception:
-                pass
-
+        # Automatically import default API settings if none are provided.
+        self.importConfig()
 
     def __str__(self):
         return str(vars(self))
 
-    def importConfigFile(self, file_path='', section_name=''):
+    def importConfig(self):
         """Adds the settings in 'section_name' from the config file to the Settings object.
-        file_path - optional path to the config file, defaults to ~/.config/flickersyncr/config
-        section_name - optional name of section to retrieve settings from, defaults to 'default'
-        fail_silent - if the config can't be loaded, don't throw any exceptions
+        Only imports settings not explicitly provided.
         """
-        logging.info('Importing config file...')
-        if not file_path:
-            file_path = os.path.expanduser(DEFAULT_CONFIG_FILE)
-        if not section_name:
-            section_name = 'DEFAULT'
-        logging.info('Importing config, path={}, section={}'.format(file_path, section_name))
-        print('Importing config file')
-
+        file_path = os.path.join(self.config_dir, CONFIG_FILENAME)
+        logging.info('Importing config, path={}, section={}'.format(file_path,
+                self.config_profile))
         if not os.path.exists(file_path):
-            raise SyncError("Can't load config from path path {}, file doesn't exist".format(file_path))
+            raise SyncError("Can't load config from path {}, file doesn't exist".format(file_path))
         config = configparser.ConfigParser()
         config.read(file_path)
+
+        if not self.api_key:
+            self.api_key = self._importConfigOption(config, 'api_key')
+        if not self.api_secret:
+            self.api_secret = self._importConfigOption(config, 'api_secret')
+        # TODO: Import the rest of the settings? If so need to explicitly track how they were set.
+
+    def _importConfigOption(self, config, option_name):
         try:
-            self.api_key = config.get(section_name, 'api_key')
-            self.api_secret = config.get(section_name, 'api_secret')
+            option_value = config.get(self.config_profile, option_name)
         except configparser.NoOptionError as e:
-            raise SyncError('Options not specified. {}'.format(e))
+            raise SyncError('Option {} not in config file: {}'.format(option_name, e))
         except configparser.NoSectionError as e:
-            raise SyncError('No config section named "{}": error={}'.format(sectionname, e))
+            raise SyncError('No config section "{}": error={}'.format(self.config_profile, e))
+        return option_value
 
     def validate(self):
         """Validates that the settings meet the necessary logical constraints.
         """
         # The Flickr API key and secret must be specified.
-        if not self.api_key or not self.api_secret:
-            raise SyncError('The api_key and api_secret must be provided. ' +
-                    'What was set: api_key={}, api_secret=%{}'.format(
-                    self.api_key, self.api_secret))
+        if not self.api_key:
+            raise SyncError('The api_key must be provided, but it was not. Get one from ' +
+                    'http://www.flickr.com/services/api/keys/ .')
+        if not self.api_secret:
+            raise SyncError('The api_secret must be provided, but it was not. Get one from ' +
+                    'http://www.flickr.com/services/api/keys/ .')
 
         # User must specify at least --push or --pull.
         if not self.push and not self.pull:
@@ -123,5 +137,7 @@ class Settings():
             raise SyncError('Specified tag name overlaps with the checksum tag, this will cause ' +
                     'confusion during checksum validation.')
 
+        # Doesn't catch all whitespace, but we explicitly parse by splitting on space. Presumably
+        # the others are safe.
         if ' ' in self.tag:
-            raise SyncError('Spaces within tags is unsupported.')
+            raise SyncError('Spaces in tag values is unsupported.')

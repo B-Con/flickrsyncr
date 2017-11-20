@@ -36,16 +36,19 @@ def getCmdlineArgs():
             help='Use checksums comparing local and Flickr content. Stores the checksum on ' +
             'Flickr as a tag with prefix "' + CHECKSUM_PREFIX + '"" on the photo. Allows ' +
             'file edits to be detected and synced. Without this only the filename and photo\'s ' +
-            'title are used to compare files.')
-    parser.add_argument('--config_file', default='', type=str,
-            help='Path to the file with api_key and api_secret.')
+            'title are used to compare files. Checksums are calculated at upload time, they ' +
+            'are not updated if the photo is manually edited.')
+    parser.add_argument('--config_dir', default='', type=str,
+            help='Directory with the config file (with api_key and api_secret) and OAuth store.')
     parser.add_argument('--config_profile', default='', type=str,
             help='Profile name inside the config file to use.')
+    parser.add_argument('--dryrun', action='store_true',
+            help='Make no file or photo changes. See output/logs for what would have happened. ' +
+            'Still obtains and stores OAuth credentials.')
     parser.add_argument('--loglevel', action='store', choices=['NOTSET', 'DEBUG', 'INFO',
             'WARNING', 'ERROR'], default='NOTSET',
-            help='Enable log output to --logfile. If not set, no logging is done.')
-    parser.add_argument('--dryrun', action='store_true',
-            help='Make no file or photo changes. See output/logs for what would have happened.')
+            help='Verbosity for log output to --logfile. If not set, no logging is done. (Uses ' +
+            'default "logging" library string verbosity.)')
     parser.add_argument('--logfile', action='store', type=str,
             help='File to append log output to. Defaults to stderr.')
     parser.add_argument('--push', action='store_true',
@@ -71,16 +74,15 @@ def getCmdlineArgs():
 def main():
     args = getCmdlineArgs()
 
-    if args.loglevel != 'NOTSET':
-        # Set the log level for this script, the main lib, and the flickrapi dependency to the same
-        # (good idea or too spammy?). Logging defaults to stderr unless set.
-        logger.setLevel(args.loglevel)
-        logging.getLogger('flickrsyncr').setLevel(args.loglevel)
-        logging.getLogger('flickrapi').setLevel(args.loglevel)
-        if args.logfile:
-            logging.basicConfig(filename=args.logfile, filemode='a')
-        else:
-            logging.basicConfig(stream=sys.stderr)
+    # Set the log level for this script, the main lib, and the flickrapi dependency to the same
+    # (good idea or too spammy?). Logging defaults to stderr unless set.
+    logger.setLevel(args.loglevel)
+    logging.getLogger('flickrsyncr').setLevel(args.loglevel)
+    logging.getLogger('flickrapi').setLevel(args.loglevel)
+    if args.logfile:
+        logging.basicConfig(filename=args.logfile, filemode='a')
+    else:
+        logging.basicConfig(stream=sys.stderr)
 
     logger.debug('Cmd-line args: ' + str(args))
 
@@ -100,7 +102,7 @@ def main():
                 tag=args.tag,
                 checksum=args.checksum,
                 dryrun=args.dryrun,
-                config_file=args.config_file,
+                config_dir=args.config_dir,
                 config_profile=args.config_profile)
 
         # Do the actual syncing.
