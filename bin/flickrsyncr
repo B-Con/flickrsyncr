@@ -75,10 +75,16 @@ def main():
     args = getCmdlineArgs()
 
     # Set the log level for this script, the main lib, and the flickrapi dependency to the same
-    # (good idea or too spammy?). Logging defaults to stderr unless set.
-    logger.setLevel(args.loglevel)
-    logging.getLogger('flickrsyncr').setLevel(args.loglevel)
-    logging.getLogger('flickrapi').setLevel(args.loglevel)
+    # (good idea or too spammy?).
+    loglevel = args.loglevel
+    if args.logfile and args.loglevel == 'NOTSET':
+        loglevel = 'INFO'
+    logger.setLevel(loglevel)
+    logging.getLogger('flickrsyncr').setLevel(loglevel)
+    logging.getLogger('flickrapi').setLevel(loglevel)
+
+    # Set the log target. Logging defaults to stderr unless set. Picks a sane log level if none
+    # (specified or if turned off).
     if args.logfile:
         logging.basicConfig(filename=args.logfile, filemode='a')
     else:
