@@ -1,3 +1,3 @@
 configparser
-flickrapi
+flickrapi==2.3.1
 setuptools
