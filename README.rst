@@ -23,7 +23,7 @@ Setup
                  api_key = 0123456789abcdef0123456789abcdef
                  api_secret = 0123456789abcdef
 
-    * Multiple API key/secret pairs can be stored under different profile names. The ``DEFAULT`` profile will be used by default unless an alternative profile name is specified via ``--config_profile``.
+       * Multiple API key/secret pairs can be stored under different profile names. The ``DEFAULT`` profile will be used by default unless an alternative profile name is specified via ``--config_profile``.
 
 3.    On the first run, human involvement is necessary to authorize the app for Flickr OAuth access to the Flickr account. The app will provide a URL to visit in a web browser. Login to the Flickr account you want to associate the app with and then visit the displayed URL to grant the app permission.
 
@@ -31,10 +31,10 @@ Setup
 
       OAuth permissions are still checked and obtained in ``dryrun`` mode.
 
-Usage
+Usage 
 =====
 
-Command-line application
+Command-line ap plication
 ------------------------
 
 Basics:
@@ -65,14 +65,14 @@ Examples:
 
     $ flickrsyncr --album=albumname --path=/my/dir --pull --dryrun
 
-Library
+Library 
 -------
 
 Objects of interest:
 
-* ``flickrsyncr.Settings`` - A class containing all necessary settings. Only the
-* ``flickrsyncr.sync`` - Main execution function. Takes a ``Settings()`` as the only argument.
-* ``flickrsyncr.SyncError`` - Generic exception thrown by the pacakge on fatal errors.
+* ``flickrsyncr.Settings`` - A class containing all settings.
+* ``flickrsyncr.sync`` - Main execution function. Takes a ``flickrsyncr.Settings()`` as the only argument.
+* ``flickrsyncr.SyncError`` - Fatal error thrown by the library.
 
 Create a ``Settings()`` with the required settings in the constructor and pass it to ``sync()``.
 
