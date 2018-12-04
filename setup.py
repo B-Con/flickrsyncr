@@ -8,6 +8,10 @@ with open('README.rst') as f:
 with open('LICENSE') as f:
     license = f.read()
 
+with open('requirements.txt') as f:
+    # Basica functionality requires all the listed dependencies.
+    install_req = f.read().split()
+
 setup(
     name = 'flickrsyncr',
     version = flickrsyncr.__version__,
@@ -20,4 +24,5 @@ setup(
     license = license,
     scripts = ['bin/flickrsyncr'],
     keywords='flickr sync upload download backup photo album',
+    install_requires=install_req
 )
