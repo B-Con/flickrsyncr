@@ -34,7 +34,7 @@ Setup
 Usage 
 =====
 
-Command-line ap plication
+Command-line application
 ------------------------
 
 Basics:
@@ -64,6 +64,13 @@ Examples:
 * See what would change if a Flickr album were added to a local directory::
 
     $ flickrsyncr --album=albumname --path=/my/dir --pull --dryrun
+
+Docker
+------
+
+I provide a docker image image: https://cloud.docker.com/repository/docker/primederivation/flickrsyncr.
+
+The ENTRYPOINT is the cmd-line flickrsyncr, so pass the normal cmd-line flags to `docker run` to use the container.
 
 Library 
 -------
