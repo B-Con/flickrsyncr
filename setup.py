@@ -1,6 +1,5 @@
 from setuptools import setup
-import flickrsyncr
-
+#from flickrsyncr import VERSION
 
 with open('README.rst') as f:
     readme = f.read()
@@ -9,12 +8,12 @@ with open('LICENSE') as f:
     license = f.read()
 
 with open('requirements.txt') as f:
-    # Basica functionality requires all the listed dependencies.
+    # Basic functionality requires all the listed dependencies.
     install_req = f.read().split()
 
 setup(
     name = 'flickrsyncr',
-    version = flickrsyncr.__version__,
+    version = '0.1.7',
     packages = ['flickrsyncr'],
     description = 'Syncs photos between local filesystem and Flickr album',
     long_description = readme,
@@ -22,7 +21,13 @@ setup(
     author_email = 'brad@bradconte.com',
     url = 'https://github.com/B-Con/flickrsyncr',
     license = license,
-    scripts = ['bin/flickrsyncr'],
-    keywords='flickr sync upload download backup photo album',
-    install_requires=install_req
+    keywords = 'flickr sync upload download backup photo album photo pic',
+    install_requires = install_req,
+    entry_points = {
+        "console_scripts": [
+            "flickrsyncr=flickrsyncr:cli",
+        ]
+    },
+    test_suite = 'nose.collector',
+    tests_require = ['nose'],
 )

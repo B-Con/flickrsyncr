@@ -1,16 +1,17 @@
+"""Common definitions."""
 import logging
+import sys
 
 
-# Application version. The canonical source.
-VERSION = '0.1.5'
+__all__ = ['CHECKSUM_TAG_PREFIX', 'SyncError', 'VERSION']
+
+
+VERSION = '0.2.0'  # The canonical version definition.
+
 
 # The tag naming is returned to users differently than it is set. When set, use "machine" mode.
 CHECKSUM_TAG_PREFIX = 'checksum:md5='
 CHECKSUM_TAG_PREFIX_NORMALIZED = 'checksummd5'
-
-# Init the logger.
-logger = logging.getLogger('flickrsyncr')
-logger.setLevel(logging.NOTSET)
 
 
 # Custom exception class used to terminate execution.

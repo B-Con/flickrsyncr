@@ -1,3 +1,5 @@
 configparser
 flickrapi==2.3.1
 setuptools
+python-magic
+

@@ -15,7 +15,7 @@ Setup
 
 1. Obtain a Flickr API KEY. Starting point: <https://www.flickr.com/services/apps/create/apply>.
 
-2.     Save the API key and secret in a config file (unless you will provide it on the cmd-line or in the ``Settings()`` object).
+2. Save the API key and secret in a config file (unless you will provide it on the cmd-line or in the ``Config`` object).
 
        *     The config file at ``~/.config/flickrsyncr/config.conf`` will used by default unless an alternative path is specified via ``--config_dir``. Sample config file content (there is also one in ``tests/config/config.conf``)::
 
@@ -31,7 +31,7 @@ Setup
 
       OAuth permissions are still checked and obtained in ``dryrun`` mode.
 
-Usage 
+Usage
 =====
 
 Command-line application
@@ -72,20 +72,20 @@ I provide a docker image image: https://cloud.docker.com/repository/docker/prime
 
 The ENTRYPOINT is the cmd-line flickrsyncr, so pass the normal cmd-line flags to `docker run` to use the container.
 
-Library 
+Library
 -------
 
 Objects of interest:
 
-* ``flickrsyncr.Settings`` - A class containing all settings.
-* ``flickrsyncr.sync`` - Main execution function. Takes a ``flickrsyncr.Settings()`` as the only argument.
+* ``flickrsyncr.Config`` - A class for all config settings.
+* ``flickrsyncr.sync`` - Main execution. Takes a ``flickrsyncr.Config`` as the only argument.
 * ``flickrsyncr.SyncError`` - Fatal error thrown by the library.
 
-Create a ``Settings()`` with the required settings in the constructor and pass it to ``sync()``.
+Create a ``Config`` with the required settings in the constructor and pass it to ``sync()``.
 
-The cmd-line tool is basically just a wrapper to convert cmd-line arguments into a ``Settings()`` and then calls ``sync()``.
+The cmd-line tool is basically just a wrapper to convert cmd-line arguments into a ``Config`` and then calls ``sync``.
 
-See the cmd-line section for examples, the cmd-line arguments and ``Settings()`` arguments share the same names (except for the ``--`` hyphen prefix).
+See the cmd-line section for examples, the cmd-line arguments and ``Config`` arguments share the same names (except for the ``--`` hyphen prefix).
 
 Requirements
 ============
