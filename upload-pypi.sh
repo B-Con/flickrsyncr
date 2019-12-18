@@ -1,5 +1,6 @@
 #!/bin/sh
 
-rm -r dist/*
+rm -r ./dist
 python setup.py bdist_wheel
-twine upload dist/* 
+twine upload dist/*
+

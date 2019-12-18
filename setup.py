@@ -1,10 +1,10 @@
 from setuptools import setup
-#from flickrsyncr import VERSION
 
-with open('README.rst') as f:
+
+with open('README.md', encoding='utf-8') as f:
     readme = f.read()
 
-with open('LICENSE') as f:
+with open('LICENSE', encoding='utf-8') as f:
     license = f.read()
 
 with open('requirements.txt') as f:
@@ -13,10 +13,11 @@ with open('requirements.txt') as f:
 
 setup(
     name = 'flickrsyncr',
-    version = '0.1.7',
+    version = '0.2.0',  # Keep in sync with flickrsyncr.VERSION.
     packages = ['flickrsyncr'],
     description = 'Syncs photos between local filesystem and Flickr album',
     long_description = readme,
+    long_description_content_type = 'text/markdown',
     author = 'Brad Conte',
     author_email = 'brad@bradconte.com',
     url = 'https://github.com/B-Con/flickrsyncr',
