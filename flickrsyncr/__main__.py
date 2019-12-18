@@ -5,12 +5,15 @@ import logging
 import sys
 
 import flickrapi
-from .general import CHECKSUM_TAG_PREFIX
-from .general import SyncError
-from .general import VERSION
 from .config import Config
 from .config import loadConfigStore
 from .flickrwrapper import getFlickrAPI
+from .general import CHECKSUM_TAG_PREFIX
+from .general import SyncError
+from .general import VERSION
+from .status import setupStatus
+from .status import updateStatus
+from .syncer import sync
 
 
 def getCmdlineArgs():
@@ -125,7 +128,7 @@ def cli():
         # Do the actual syncing.
         flickrwrapper = getFlickrAPI(config)
         config.album_id = flickrwrapper.getAlbumID(args.album)
-        flickrsyncr.sync(config, flickrwrapper)
+        sync(config, flickrwrapper)
     except (SyncError) as e:
         print(e, file=sys.stderr)
         logger.error(e)
