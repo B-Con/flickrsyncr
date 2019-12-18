@@ -6,7 +6,7 @@ import sys
 __all__ = ['CHECKSUM_TAG_PREFIX', 'SyncError', 'VERSION']
 
 
-VERSION = '0.2.0'  # The canonical version definition.
+VERSION = '0.2.1'  # The canonical version definition.
 
 
 # The tag naming is returned to users differently than it is set. When set, use "machine" mode.

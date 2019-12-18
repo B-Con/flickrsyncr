@@ -13,7 +13,7 @@ with open('requirements.txt') as f:
 
 setup(
     name = 'flickrsyncr',
-    version = '0.2.0',  # Keep in sync with flickrsyncr.VERSION.
+    version = '0.2.1',  # Keep in sync with flickrsyncr.VERSION.
     packages = ['flickrsyncr'],
     description = 'Syncs photos between local filesystem and Flickr album',
     long_description = readme,
